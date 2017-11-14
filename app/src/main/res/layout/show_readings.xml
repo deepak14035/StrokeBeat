@@ -9,8 +9,16 @@
     tools:context="com.example.deepak14035.strokebeat.MainActivity$PlaceholderFragment">
 
     <TextView
-        android:id="@+id/section_label"
+        android:id="@+id/section_label1"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="accelerometer readings"
+        />
+    <TextView
+        android:id="@+id/readings"
+        android:layout_width="wrap_content"
+        android:layout_height="400sp"
+        android:text="data-\n"
+        />
 
 </RelativeLayout>
