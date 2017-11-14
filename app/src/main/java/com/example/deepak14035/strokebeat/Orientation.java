@@ -23,7 +23,7 @@ import java.io.PrintWriter;
 public class Orientation implements SensorEventListener {
 
   public interface Listener {
-    void onOrientationChanged(float pitch, float roll);
+    void onOrientationChanged(float pitch, float roll, float yaw);
   }
 
   private static final int SENSOR_DELAY_MICROS = 50 * 1000; // 50ms
@@ -110,7 +110,8 @@ public class Orientation implements SensorEventListener {
     }float[] val=event.values;
 
     if (event.sensor == mRotationSensor) {
-      updateOrientation(event.values);
+      //updateOrientation(event.values);
+      mListener.onOrientationChanged(val[0], val[1],val[2]);
       Log.d("accelero", val[0] + "," + val[1] + "," + val[2]);
       //writeFile(cont,accelerofilename,val[0]+","+val[1]+","+val[2]);
     }
@@ -162,6 +163,6 @@ public class Orientation implements SensorEventListener {
     float pitch = orientation[1] * -57;
     float roll = orientation[2] * -57;
 
-    mListener.onOrientationChanged(pitch, roll);
+    mListener.onOrientationChanged(pitch, roll,0f);
   }
 }

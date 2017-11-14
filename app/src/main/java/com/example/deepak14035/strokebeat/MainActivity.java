@@ -121,9 +121,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onOrientationChanged(float pitch, float roll) {
-            accelerometerValues.add(pitch+roll);
-            displayvalues.append(pitch + roll + "\n");
+        public void onOrientationChanged(float pitch, float roll, float yaw) {
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==2) {
+                accelerometerValues.add(pitch+roll+yaw);
+                displayvalues.append(pitch + roll + yaw + "\n");
+            }
         }
 
         @Override
