@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
         private static final String ARG_SECTION_NUMBER = "section_number";
         private Orientation mOrientation;
         private ArrayList<Float> accelerometerValues;
-        private ArrayList<Float> ambientTempValues;
+        private ArrayList<Float> tempValues;
         private TextView displayvalues;
         public PlaceholderFragment() {
         }
@@ -266,10 +266,12 @@ public class MainActivity extends AppCompatActivity {
         private final Handler mHandler = new Handler();
         private Runnable mTimer;
         private double graphLastXValue = 5d;
-        private LineGraphSeries<DataPoint> mSeries= new LineGraphSeries<>();
+        private double graphLastX1Value = 5d;
+        private LineGraphSeries<DataPoint> accelSeries= new LineGraphSeries<>();
+        private LineGraphSeries<DataPoint> tempSeries= new LineGraphSeries<>();
 
 
-        public void initGraph(GraphView graph) {
+        public void initGraph(GraphView graph, LineGraphSeries mSeries ) {
             graph.getViewport().setXAxisBoundsManual(true);
             graph.getViewport().setMinX(0);
             graph.getViewport().setMaxX(4);
@@ -277,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
             graph.getGridLabelRenderer().setLabelVerticalWidth(100);
 
             // first mSeries is a line
-            mSeries = new LineGraphSeries<>();
+            //mSeries = new LineGraphSeries<>();
             mSeries.setDrawDataPoints(true);
             mSeries.setDrawBackground(true);
             graph.addSeries(mSeries);
@@ -290,7 +292,18 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     graphLastXValue += 0.25d;
                     if(accelerometerValues.size()>0) {
-                        mSeries.appendData(new DataPoint(graphLastXValue, accelerometerValues.get(accelerometerValues.size() - 1)), true, 22);
+                        accelSeries.appendData(new DataPoint(graphLastXValue, accelerometerValues.get(accelerometerValues.size() - 1)), true, 22);
+                    }
+                    mHandler.postDelayed(this, 330);
+                }
+            };
+            mHandler.postDelayed(mTimer, 1500);
+            mTimer = new Runnable() {
+                @Override
+                public void run() {
+                    graphLastX1Value += 0.25d;
+                    if(tempValues.size()>0) {
+                        tempSeries.appendData(new DataPoint(graphLastX1Value, tempValues.get(tempValues.size() - 1)), true, 22);
                     }
                     mHandler.postDelayed(this, 330);
                 }
@@ -323,18 +336,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override//TODO: what is sensordata
-        public void onOrientationChanged(float pitch, float roll, float yaw) {
-            if(getArguments().getInt(ARG_SECTION_NUMBER)==2 &&sensordata!=null) {
-                //accelerometerValues.add(pitch+roll+yaw);
-                displayvalues.append(sensordata);//check what is sensordata
-            }
+        public void onOrientationChanged(String sensor, float readings) {
 
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==2 &&sensordata!=null) {
+                    //accelerometerValues.add(pitch+roll+yaw);
+                    displayvalues.append(sensordata);//check what is sensordata
+            }
             if(getArguments().getInt(ARG_SECTION_NUMBER)==2) {
-                while(accelerometerValues.size()>=100){
-                    accelerometerValues.remove(0);
+                if(sensor.equals("accel")){
+                    while(accelerometerValues.size()>=100){
+                        accelerometerValues.remove(0);
+                    }
+                    accelerometerValues.add(readings);
+                } else if(sensor.equals("temp")){
+                    while(tempValues.size()>=100){
+                        tempValues.remove(0);
+                    }
+                    tempValues.add(readings);
                 }
 
-                accelerometerValues.add(pitch + roll + yaw);
+
                 //displayvalues.append(pitch + roll + yaw + "\n");
 
             }
@@ -361,15 +382,19 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView;
-            mOrientation = new Orientation(this.getActivity(),Sensor.TYPE_ACCELEROMETER);
+            mOrientation = new Orientation(this.getActivity(),Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_AMBIENT_TEMPERATURE);
 
             accelerometerValues=new ArrayList<>();
-
+            tempValues = new ArrayList<>();
             if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
                 mOrientation.startListening(this);
                 rootView = inflater.inflate(R.layout.show_readings, container, false);
-                GraphView graph = (GraphView) rootView.findViewById(R.id.accelerometer_graph);
-                initGraph(graph);
+                GraphView accelGraph = (GraphView) rootView.findViewById(R.id.accelerometer_graph);
+                GraphView tempGraph = (GraphView) rootView.findViewById(R.id.ambient_temp_graph);
+                accelSeries = new LineGraphSeries<>();
+                tempSeries = new LineGraphSeries<>();
+                initGraph(accelGraph, accelSeries);
+                initGraph(tempGraph, tempSeries);
                 //displayvalues=(TextView) rootView.findViewById(R.id.section_label1);
                 //return rootView;
             }

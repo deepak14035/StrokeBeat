@@ -44,7 +44,7 @@
             android:id="@+id/section_label2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="accelerometer readings"
+            android:text="Ambient Temperature"
             />
     </LinearLayout>
 
