@@ -16,18 +16,38 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <com.jjoe64.graphview.GraphView
+                android:layout_width="match_parent"
+                android:layout_height="200dip"
+                android:id="@+id/accelerometer_graph" />
+            <TextView
+                android:id="@+id/section_label1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accelerometer"
+                />
+        </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="200dip"
+            android:id="@+id/ambient_temp_graph" />
         <TextView
-            android:id="@+id/section_label1"
+            android:id="@+id/section_label2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="accelerometer readings"
             />
-        <TextView
-            android:id="@+id/readings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="data-\n"
-            />
+    </LinearLayout>
+
+
     </LinearLayout>
 </ScrollView>

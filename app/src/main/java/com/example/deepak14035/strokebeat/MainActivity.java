@@ -40,6 +40,13 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
+import java.util.ArrayList;
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -247,11 +254,60 @@ public class MainActivity extends AppCompatActivity {
          * The fragment argument representing the section number for this
          * fragment.
          */
+
         private static final String ARG_SECTION_NUMBER = "section_number";
         private Orientation mOrientation;
         private ArrayList<Float> accelerometerValues;
+        private ArrayList<Float> ambientTempValues;
         private TextView displayvalues;
         public PlaceholderFragment() {
+        }
+
+        private final Handler mHandler = new Handler();
+        private Runnable mTimer;
+        private double graphLastXValue = 5d;
+        private LineGraphSeries<DataPoint> mSeries= new LineGraphSeries<>();
+
+
+        public void initGraph(GraphView graph) {
+            graph.getViewport().setXAxisBoundsManual(true);
+            graph.getViewport().setMinX(0);
+            graph.getViewport().setMaxX(4);
+
+            graph.getGridLabelRenderer().setLabelVerticalWidth(100);
+
+            // first mSeries is a line
+            mSeries = new LineGraphSeries<>();
+            mSeries.setDrawDataPoints(true);
+            mSeries.setDrawBackground(true);
+            graph.addSeries(mSeries);
+        }
+        @Override
+        public void onResume() {
+            super.onResume();
+            mTimer = new Runnable() {
+                @Override
+                public void run() {
+                    graphLastXValue += 0.25d;
+                    if(accelerometerValues.size()>0) {
+                        mSeries.appendData(new DataPoint(graphLastXValue, accelerometerValues.get(accelerometerValues.size() - 1)), true, 22);
+                    }
+                    mHandler.postDelayed(this, 330);
+                }
+            };
+            mHandler.postDelayed(mTimer, 1500);
+        }
+
+        @Override
+        public void onPause() {
+            mHandler.removeCallbacks(mTimer);
+            super.onPause();
+        }
+
+        double mLastRandom = 2;
+        Random mRand = new Random();
+        private double getRandom() {
+            return mLastRandom += mRand.nextDouble()*0.5 - 0.25;
         }
 
         /**
@@ -266,11 +322,21 @@ public class MainActivity extends AppCompatActivity {
             return fragment;
         }
 
-        @Override
+        @Override//TODO: what is sensordata
         public void onOrientationChanged(float pitch, float roll, float yaw) {
             if(getArguments().getInt(ARG_SECTION_NUMBER)==2 &&sensordata!=null) {
                 //accelerometerValues.add(pitch+roll+yaw);
-                displayvalues.append(sensordata);
+                displayvalues.append(sensordata);//check what is sensordata
+            }
+
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==2) {
+                while(accelerometerValues.size()>=100){
+                    accelerometerValues.remove(0);
+                }
+
+                accelerometerValues.add(pitch + roll + yaw);
+                //displayvalues.append(pitch + roll + yaw + "\n");
+
             }
         }
 
@@ -286,13 +352,25 @@ public class MainActivity extends AppCompatActivity {
             mOrientation.stopListening();
         }
 
+
+
+
+
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView;
-            if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
-                rootView = inflater.inflate(R.layout.show_readings, container, false);
+            mOrientation = new Orientation(this.getActivity(),Sensor.TYPE_ACCELEROMETER);
 
+            accelerometerValues=new ArrayList<>();
+
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
+                mOrientation.startListening(this);
+                rootView = inflater.inflate(R.layout.show_readings, container, false);
+                GraphView graph = (GraphView) rootView.findViewById(R.id.accelerometer_graph);
+                initGraph(graph);
+                //displayvalues=(TextView) rootView.findViewById(R.id.section_label1);
                 //return rootView;
             }
             else {
@@ -302,12 +380,12 @@ public class MainActivity extends AppCompatActivity {
                 //return rootView;
             }
             //if(R.id.section_label1>0){
-                displayvalues=(TextView) rootView.findViewById(R.id.section_label1);
+
             //}
 
-            mOrientation = new Orientation(this.getActivity(),Sensor.TYPE_ACCELEROMETER);
-            mOrientation.startListening(this);
-            accelerometerValues=new ArrayList<>();
+
+
+
 
             return rootView;
         }
