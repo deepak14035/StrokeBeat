@@ -382,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView;
-            mOrientation = new Orientation(this.getActivity(),Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_AMBIENT_TEMPERATURE);
+            mOrientation = new Orientation(this.getActivity(),Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_LIGHT);
 
             accelerometerValues=new ArrayList<>();
             tempValues = new ArrayList<>();
