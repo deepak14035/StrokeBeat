@@ -184,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.d("asd","working-"+bytesAvailable);
                             byte[] packetBytes = new byte[bytesAvailable];
                             mmInputStream.read(packetBytes);
+                            //asdasd
                             for(int i=0;i<bytesAvailable;i++)
                             {
                                 byte b = packetBytes[i];
