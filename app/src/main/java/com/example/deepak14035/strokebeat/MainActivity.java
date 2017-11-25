@@ -1,17 +1,29 @@
 package com.example.deepak14035.strokebeat;
 
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+
 import android.graphics.drawable.GradientDrawable;
 import android.hardware.Sensor;
 import android.os.Build;
 import android.os.Handler;
+
 import android.os.Parcelable;
+
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -40,6 +52,16 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.android.gms.awareness.Awareness;
+import com.google.android.gms.awareness.snapshot.WeatherResponse;
+import com.google.android.gms.awareness.snapshot.WeatherResult;
+import com.google.android.gms.awareness.state.Weather;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -47,7 +69,9 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity  implements
+        GoogleApiClient.OnConnectionFailedListener,
+        ConnectionCallbacks {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -246,6 +270,21 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -254,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
          * The fragment argument representing the section number for this
          * fragment.
          */
-
+        private final static int REQUEST_PERMISSION_RESULT_CODE = 42;
         private static final String ARG_SECTION_NUMBER = "section_number";
         private Orientation mOrientation;
         private ArrayList<Float> accelerometerValues;
@@ -263,6 +302,7 @@ public class MainActivity extends AppCompatActivity {
         public PlaceholderFragment() {
         }
 
+        private GoogleApiClient mGoogleApiClient;
         private final Handler mHandler = new Handler();
         private Runnable mTimer;
         private double graphLastXValue = 5d;
@@ -305,6 +345,15 @@ public class MainActivity extends AppCompatActivity {
                     if(tempValues.size()>0) {
                         tempSeries.appendData(new DataPoint(graphLastX1Value, tempValues.get(tempValues.size() - 1)), true, 22);
                     }
+                    mHandler.postDelayed(this, 330);
+                }
+            };
+            mHandler.postDelayed(mTimer, 1500);
+
+            mTimer = new Runnable() {
+                @Override
+                public void run() {
+                    detectWeather();
                     mHandler.postDelayed(this, 330);
                 }
             };
@@ -361,6 +410,65 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        private boolean checkLocationPermission() {
+            Log.e("error+", "permission check");
+            if( !hasLocationPermission() ) {
+                Log.e("error+", "Does not have location permission granted");
+                requestLocationPermission();
+                return false;
+            }
+
+            return true;
+        }
+
+        private void requestLocationPermission() {
+            ActivityCompat.requestPermissions(
+                    this.getActivity(),
+                    new String[]{ Manifest.permission.ACCESS_FINE_LOCATION },
+                    REQUEST_PERMISSION_RESULT_CODE );
+        }
+
+        private boolean hasLocationPermission() {
+            return ContextCompat.checkSelfPermission( this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION )
+                    == PackageManager.PERMISSION_GRANTED;
+        }
+
+        @Override
+        public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[],
+                                               @NonNull int[] grantResults) {
+            switch (requestCode) {
+                case REQUEST_PERMISSION_RESULT_CODE: {
+                    // If request is cancelled, the result arrays are empty.
+                    if (grantResults.length > 0
+                            && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        detectWeather();
+                    } else {
+                        Log.e("error+", "Location permission denied.");
+                    }
+                }
+            }
+        }
+
+        private void detectWeather() {
+            Log.e("error+", "WEATHER WEAHER EWEATHER EWEAETHER.");
+            if( !checkLocationPermission() ) {
+
+                return;
+            }
+
+            final Task<WeatherResponse> weatherResponseTask = Awareness.getSnapshotClient(this.getActivity()).getWeather().addOnCompleteListener(this.getActivity(), new OnCompleteListener<WeatherResponse>() {
+                @Override
+                public void onComplete(@NonNull Task<WeatherResponse> task) {
+
+                    Weather weather = task.getResult().getWeather();
+                    //displayvalues.append("Temp: " + weather.getTemperature(Weather.FAHRENHEIT) + " " + weather.getFeelsLikeTemperature(Weather.FAHRENHEIT) + "\n");
+                    Log.e("Tuts+", "Temp: " + weather.getTemperature(Weather.FAHRENHEIT));
+                    Log.e("Tuts+", "Feels like: " + weather.getFeelsLikeTemperature(Weather.FAHRENHEIT));
+                }
+            });
+
+        }
+
         @Override
         public void onStart() {
             super.onStart();
@@ -375,7 +483,12 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+        @Override
+        public void onCreate (Bundle savedInstanceState){
+            super.onCreate(savedInstanceState);
 
+
+        }
 
 
         @Override
@@ -386,7 +499,15 @@ public class MainActivity extends AppCompatActivity {
 
             accelerometerValues=new ArrayList<>();
             tempValues = new ArrayList<>();
-            if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
+                rootView = inflater.inflate(R.layout.fragment_main, container, false);
+                displayvalues=(TextView) rootView.findViewById(R.id.section_label);
+                displayvalues.setText("temp values\n");
+                detectWeather();
+                Log.e("weather+", "DETECT START DEteCT start");
+                //detectWeather();
+                Log.e("weather+", "DETECT OVER CDETECT OVEr");
+            }else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
                 mOrientation.startListening(this);
                 rootView = inflater.inflate(R.layout.show_readings, container, false);
                 GraphView accelGraph = (GraphView) rootView.findViewById(R.id.accelerometer_graph);
