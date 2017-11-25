@@ -1,4 +1,7 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,17 +11,23 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.deepak14035.strokebeat.MainActivity$PlaceholderFragment">
 
-    <TextView
-        android:id="@+id/section_label1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="accelerometer readings"
-        />
-    <TextView
-        android:id="@+id/readings"
-        android:layout_width="wrap_content"
-        android:layout_height="400sp"
-        android:text="data-\n"
-        />
 
-</RelativeLayout>
+<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/section_label1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="accelerometer readings"
+            />
+        <TextView
+            android:id="@+id/readings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="data-\n"
+            />
+    </LinearLayout>
+</ScrollView>
