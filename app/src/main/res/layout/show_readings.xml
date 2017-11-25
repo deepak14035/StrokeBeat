@@ -16,18 +16,91 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <com.jjoe64.graphview.GraphView
+                android:layout_width="match_parent"
+                android:layout_height="150dip"
+                android:id="@+id/accelerometer_graph" />
+            <TextView
+                android:id="@+id/section_label1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accelerometer"
+                />
+        </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="150dip"
+            android:id="@+id/ambient_temp_graph" />
         <TextView
-            android:id="@+id/section_label1"
+            android:id="@+id/section_label2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="accelerometer readings"
+            android:text="Ambient Temperature"
             />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="150dip"
+            android:id="@+id/body_temp_graph" />
         <TextView
-            android:id="@+id/readings"
+            android:id="@+id/section_label3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="data-\n"
+            android:text="Body Temperature"
             />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="150dip"
+            android:id="@+id/heart_rate_graph" />
+        <TextView
+            android:id="@+id/section_label4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Heart Rate"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="150dip"
+            android:id="@+id/humidity_graph" />
+        <TextView
+            android:id="@+id/section_label5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Humidity"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="75dip"
+        android:orientation="vertical"/>
+
+
     </LinearLayout>
 </ScrollView>

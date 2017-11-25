@@ -23,7 +23,7 @@ import java.io.PrintWriter;
 public class Orientation implements SensorEventListener {
 
   public interface Listener {
-    void onOrientationChanged(float pitch, float roll, float yaw);
+    void onOrientationChanged(String sensor, float readings);
   }
 
   private static final int SENSOR_DELAY_MICROS = 50 * 1000; // 50ms
@@ -33,19 +33,19 @@ public class Orientation implements SensorEventListener {
   private final SensorManager mSensorManager;
 
   @Nullable
-  private final Sensor mRotationSensor;//,mGyroSensor;
+  private final Sensor mRotationSensor, mTempSensor;
 
   private int mLastAccuracy;
   private Listener mListener;
   String gyrofilename="gyrodata.txt",accelerofilename="accelerodata.txt";
   Context cont;
-  public Orientation(Activity activity, int sensorID) {
+  public Orientation(Activity activity, int sensorID, int sensorID2) {
     mWindowManager = activity.getWindow().getWindowManager();
     mSensorManager = (SensorManager) activity.getSystemService(Activity.SENSOR_SERVICE);
     cont=activity.getApplicationContext();
     // Can be null if the sensor hardware is not available
     mRotationSensor = mSensorManager.getDefaultSensor(sensorID);
-    //mGyroSensor = mSensorManager.getDefaultSensor(sensorID2);
+    mTempSensor = mSensorManager.getDefaultSensor(sensorID2);
 
   }
 
@@ -54,12 +54,15 @@ public class Orientation implements SensorEventListener {
       return;
     }
     mListener = listener;
-    if (mRotationSensor == null) {
+    if (mRotationSensor == null && mTempSensor==null) {
       //LogUtil.w("Rotation vector sensor not available; will not provide orientation data.");
       return;
     }
+    if(mTempSensor==null){
+      Log.d("error","TEMPERATURE  vector sensor not available; will not provide orientation data.");
+    }
     mSensorManager.registerListener(this, mRotationSensor, SENSOR_DELAY_MICROS);
-    //mSensorManager.registerListener(this, mGyroSensor, SENSOR_DELAY_MICROS);
+    mSensorManager.registerListener(this, mTempSensor, SENSOR_DELAY_MICROS);
 
   }
 
@@ -111,14 +114,15 @@ public class Orientation implements SensorEventListener {
 
     if (event.sensor == mRotationSensor) {
       //updateOrientation(event.values);
-      mListener.onOrientationChanged(val[0], val[1],val[2]);
+      mListener.onOrientationChanged("accel",val[0]+val[1]+val[2]);
       Log.d("accelero", val[0] + "," + val[1] + "," + val[2]);
       //writeFile(cont,accelerofilename,val[0]+","+val[1]+","+val[2]);
     }
-    /*else if(event.sensor==mGyroSensor){
-      Log.d("gyro",val[0]+","+val[1]+","+val[2]);
+    else if(event.sensor==mTempSensor){
+      mListener.onOrientationChanged("temp",val[0]);
+      Log.d("temp",val[0]+",");
       //writeFile(cont,gyrofilename,val[0]+","+val[1]+","+val[2]);
-    }*/
+    }
   }
 
   @SuppressWarnings("SuspiciousNameCombination")
@@ -163,6 +167,6 @@ public class Orientation implements SensorEventListener {
     float pitch = orientation[1] * -57;
     float roll = orientation[2] * -57;
 
-    mListener.onOrientationChanged(pitch, roll,0f);
+    mListener.onOrientationChanged("accel",pitch+roll+0f);
   }
 }
