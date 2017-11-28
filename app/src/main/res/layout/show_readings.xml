@@ -15,92 +15,92 @@
 <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:orientation="vertical">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <com.jjoe64.graphview.GraphView
-                android:layout_width="match_parent"
-                android:layout_height="150dip"
-                android:id="@+id/accelerometer_graph" />
             <TextView
                 android:id="@+id/section_label1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Accelerometer"
                 />
+            <com.jjoe64.graphview.GraphView
+                android:layout_width="match_parent"
+                android:layout_height="150dip"
+                android:id="@+id/accelerometer_graph" />
+
         </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-        <com.jjoe64.graphview.GraphView
-            android:layout_width="match_parent"
-            android:layout_height="150dip"
-            android:id="@+id/ambient_temp_graph" />
         <TextView
             android:id="@+id/section_label2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Ambient Temperature"
             />
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="150dip"
+            android:id="@+id/ambient_temp_graph" />
+
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-        <com.jjoe64.graphview.GraphView
-            android:layout_width="match_parent"
-            android:layout_height="150dip"
-            android:id="@+id/body_temp_graph" />
         <TextView
             android:id="@+id/section_label3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Body Temperature"
             />
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="150dip"
+            android:id="@+id/body_temp_graph" />
+
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-        <com.jjoe64.graphview.GraphView
-            android:layout_width="match_parent"
-            android:layout_height="150dip"
-            android:id="@+id/heart_rate_graph" />
         <TextView
             android:id="@+id/section_label4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Heart Rate"
             />
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="150dip"
+            android:id="@+id/heart_rate_graph" />
+
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-        <com.jjoe64.graphview.GraphView
-            android:layout_width="match_parent"
-            android:layout_height="150dip"
-            android:id="@+id/humidity_graph" />
         <TextView
             android:id="@+id/section_label5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Humidity"
             />
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="150dip"
+            android:id="@+id/humidity_graph" />
+
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="75dip"
-        android:orientation="vertical"/>
-
 
     </LinearLayout>
 </ScrollView>
