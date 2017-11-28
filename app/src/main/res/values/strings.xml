@@ -6,4 +6,24 @@
     <string name="contents">Look for devices</string>
     <string name="dummy_content">CONNECT\nDEVICE</string>
     <string name="google_play_services_key">AIzaSyBvvaia53v2TI2Uq-Zbi-4QaGMRwEzfHHM</string>
+    <string-array name="heatstroke_tips">
+        <item>Have the person lie down</item>
+        <item>Apply cold compresses</item>
+        <item>Use a fan to lower temperature</item>
+        <item>Elevate feet</item>
+        <item>Give fluids</item>
+    </string-array>
+    <string-array name="coldstroke_tips">
+        <item>Move victim to shelter</item>
+        <item>Remove wet clothing and wrap victim in warm covers</item>
+        <item>Apply direct body heat</item>
+        <item>Re-warm neck, chest, abdomen, and groin first</item>
+        <item>Donot rewarm area if there is a chance of refreezing</item>
+        <item>Give warm, sweet drinks if conscious</item>
+        <item>Donot give alcohol</item>
+        <item>Monitor breathing, administer CPR</item>
+        <item>Get Medical Help</item>
+    </string-array>
+
+
 </resources>

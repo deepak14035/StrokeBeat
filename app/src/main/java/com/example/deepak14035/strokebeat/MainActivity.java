@@ -41,6 +41,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -97,7 +98,10 @@ public class MainActivity extends AppCompatActivity  implements
     volatile boolean stopWorker;
     public static String sensordata;
     OutputStream mmOutputStream;
-    TextView showbluetoothdata;
+    //TextView showbluetoothdata;
+    public static ArrayList<Float> humidityValues = new ArrayList<>();
+    public static ArrayList<Float> heartRateValues = new ArrayList<>();
+    public static ArrayList<Float> bodyTempValues = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +113,7 @@ public class MainActivity extends AppCompatActivity  implements
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        showbluetoothdata=(TextView) findViewById(R.id.section_label1);
+        //showbluetoothdata=(TextView) findViewById(R.id.section_label1);
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
@@ -130,14 +134,14 @@ public class MainActivity extends AppCompatActivity  implements
         }
 
         beginListenForData();
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
     }
 
@@ -225,12 +229,32 @@ public class MainActivity extends AppCompatActivity  implements
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");
                                     readBufferPosition = 0;
-                                    showbluetoothdata.append(data+"\n");
+                                    //showbluetoothdata.append(data+"\n");
                                     Log.d("asd",data);
+                                    String[] values = data.split(",");
+                                    while(humidityValues.size()>=100){
+                                        humidityValues.remove(0);
+                                    }
+                                    while(bodyTempValues.size()>=100){
+                                        bodyTempValues.remove(0);
+                                    }
+                                    while(heartRateValues.size()>=100){
+                                        heartRateValues.remove(0);
+                                    }
+                                    try {
+                                        humidityValues.add(Float.parseFloat(values[0]));
+                                        bodyTempValues.add(Float.parseFloat(values[1]));
+                                        heartRateValues.add(Float.parseFloat(values[2]));
+                                    }catch(NumberFormatException e){
+                                        e.printStackTrace();
+                                    }catch(ArrayIndexOutOfBoundsException e){
+                                        e.printStackTrace();
+                                    }
+
                                 }
                                 else
                                 {
-                                    if((b>47 && b<58) ||(b>96&&b<123) ||(b>64 &&b<91))
+                                    if((b>47 && b<58) ||(b>96&&b<123) ||(b>64 &&b<91) || b==44 || b==46)
                                     readBuffer[readBufferPosition++] = b;
                                 }
                             }
@@ -305,10 +329,16 @@ public class MainActivity extends AppCompatActivity  implements
         private GoogleApiClient mGoogleApiClient;
         private final Handler mHandler = new Handler();
         private Runnable mTimer;
-        private double graphLastXValue = 5d;
         private double graphLastX1Value = 5d;
+        private double graphLastX2Value = 5d;
+        private double graphLastX3Value = 5d;
+        private double graphLastX4Value = 5d;
+        private double graphLastX5Value = 5d;
         private LineGraphSeries<DataPoint> accelSeries= new LineGraphSeries<>();
         private LineGraphSeries<DataPoint> tempSeries= new LineGraphSeries<>();
+        private LineGraphSeries<DataPoint> humiditySeries= new LineGraphSeries<>();
+        private LineGraphSeries<DataPoint> bodyTempSeries= new LineGraphSeries<>();
+        private LineGraphSeries<DataPoint> heartRateSeries= new LineGraphSeries<>();
 
 
         public void initGraph(GraphView graph, LineGraphSeries mSeries ) {
@@ -324,15 +354,22 @@ public class MainActivity extends AppCompatActivity  implements
             mSeries.setDrawBackground(true);
             graph.addSeries(mSeries);
         }
+
+        private void calculateStroke(){
+
+
+
+        }
+
         @Override
         public void onResume() {
             super.onResume();
             mTimer = new Runnable() {
                 @Override
                 public void run() {
-                    graphLastXValue += 0.25d;
+                    graphLastX1Value += 0.25d;
                     if(accelerometerValues.size()>0) {
-                        accelSeries.appendData(new DataPoint(graphLastXValue, accelerometerValues.get(accelerometerValues.size() - 1)), true, 22);
+                        accelSeries.appendData(new DataPoint(graphLastX1Value, accelerometerValues.get(accelerometerValues.size() - 1)), true, 22);
                     }
                     mHandler.postDelayed(this, 330);
                 }
@@ -341,23 +378,63 @@ public class MainActivity extends AppCompatActivity  implements
             mTimer = new Runnable() {
                 @Override
                 public void run() {
-                    graphLastX1Value += 0.25d;
+                    graphLastX2Value += 0.25d;
                     if(tempValues.size()>0) {
-                        tempSeries.appendData(new DataPoint(graphLastX1Value, tempValues.get(tempValues.size() - 1)), true, 22);
+                        tempSeries.appendData(new DataPoint(graphLastX2Value, tempValues.get(tempValues.size() - 1)), true, 22);
+                    }
+                    mHandler.postDelayed(this, 330);
+                }
+            };
+            mHandler.postDelayed(mTimer, 1500);
+            mTimer = new Runnable() {
+                @Override
+                public void run() {
+                    graphLastX3Value += 0.25d;
+                    Log.d("asd- humidity",humidityValues.size()+"\n");
+
+                    if(humidityValues.size()>0) {
+                        humiditySeries.appendData(new DataPoint(graphLastX3Value, humidityValues.get(humidityValues.size() - 1)), true, 22);
+                    }
+                    mHandler.postDelayed(this, 330);
+                }
+            };
+            mHandler.postDelayed(mTimer, 1500);
+            mTimer = new Runnable() {
+                @Override
+                public void run() {
+                    graphLastX4Value += 0.25d;
+                    Log.d("asd- temp",tempValues.size()+"\n");
+                    if(bodyTempValues.size()>0) {
+                        //float randTemp = 37+(float)getRandom();
+                        bodyTempSeries.appendData(new DataPoint(graphLastX4Value, bodyTempValues.get(bodyTempValues.size()-1)), true, 22);
+                    }
+                    mHandler.postDelayed(this, 330);
+                }
+            };
+            mHandler.postDelayed(mTimer, 1500);
+            mTimer = new Runnable() {
+                @Override
+                public void run() {
+                    graphLastX5Value += 0.25d;
+                    Log.d("asd- heartrate",heartRateValues.size()+"\n");
+
+                    //float randheart = (float) mRand.nextInt();
+                    if(heartRateValues.size()>0) {
+                        heartRateSeries.appendData(new DataPoint(graphLastX5Value, heartRateValues.get(heartRateValues.size()-1)), true, 22);
                     }
                     mHandler.postDelayed(this, 330);
                 }
             };
             mHandler.postDelayed(mTimer, 1500);
 
-            mTimer = new Runnable() {
-                @Override
-                public void run() {
-                    detectWeather();
-                    mHandler.postDelayed(this, 330);
-                }
-            };
-            mHandler.postDelayed(mTimer, 1500);
+//            mTimer = new Runnable() {
+//                @Override
+//                public void run() {
+//                    //detectWeather();
+//                    mHandler.postDelayed(this, 330);
+//                }
+//            };
+//            mHandler.postDelayed(mTimer, 1500);
         }
 
         @Override
@@ -389,7 +466,7 @@ public class MainActivity extends AppCompatActivity  implements
 
             if(getArguments().getInt(ARG_SECTION_NUMBER)==2 &&sensordata!=null) {
                     //accelerometerValues.add(pitch+roll+yaw);
-                    displayvalues.append(sensordata);//check what is sensordata
+                    //displayvalues.append(sensordata);//check what is sensordata
             }
             if(getArguments().getInt(ARG_SECTION_NUMBER)==2) {
                 if(sensor.equals("accel")){
@@ -512,17 +589,34 @@ public class MainActivity extends AppCompatActivity  implements
                 rootView = inflater.inflate(R.layout.show_readings, container, false);
                 GraphView accelGraph = (GraphView) rootView.findViewById(R.id.accelerometer_graph);
                 GraphView tempGraph = (GraphView) rootView.findViewById(R.id.ambient_temp_graph);
+                GraphView humidityGraph = (GraphView) rootView.findViewById(R.id.humidity_graph);
+                GraphView bodyTempGraph = (GraphView) rootView.findViewById(R.id.body_temp_graph);
+                GraphView heartRateGraph = (GraphView) rootView.findViewById(R.id.heart_rate_graph);
                 accelSeries = new LineGraphSeries<>();
                 tempSeries = new LineGraphSeries<>();
+                humiditySeries = new LineGraphSeries<>();
+                bodyTempSeries = new LineGraphSeries<>();
+                heartRateSeries = new LineGraphSeries<>();
                 initGraph(accelGraph, accelSeries);
                 initGraph(tempGraph, tempSeries);
+                initGraph(humidityGraph, humiditySeries);
+                initGraph(bodyTempGraph, bodyTempSeries);
+                initGraph(heartRateGraph, heartRateSeries);
                 //displayvalues=(TextView) rootView.findViewById(R.id.section_label1);
                 //return rootView;
             }
             else {
-                rootView = inflater.inflate(R.layout.fragment_main, container, false);
-                TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-                textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+                rootView = inflater.inflate(R.layout.show_tips, container, false);
+                TextView heatstrokeTextView = (TextView)rootView.findViewById(R.id.heatstroke_tips);
+                TextView coldstrokeTextView = (TextView)rootView.findViewById(R.id.coldstroke_tips);
+                for (String tips:getResources().getStringArray(R.array.heatstroke_tips)) {
+                    heatstrokeTextView.append(tips+"\n\n");
+                }
+                for (String tips:getResources().getStringArray(R.array.coldstroke_tips)) {
+                    coldstrokeTextView.append(tips+"\n\n");
+                }
+//                TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+
                 //return rootView;
             }
             //if(R.id.section_label1>0){
