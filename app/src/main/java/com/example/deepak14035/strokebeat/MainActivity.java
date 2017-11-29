@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.Manifest;
 import android.content.pm.PackageManager;
 
+import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.hardware.Sensor;
 import android.os.Build;
@@ -67,8 +68,14 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.Random;
+
+import zh.wang.android.yweathergetter4a.WeatherInfo;
+import zh.wang.android.yweathergetter4a.YahooWeather;
+import zh.wang.android.yweathergetter4a.YahooWeatherInfoListener;
 
 public class MainActivity extends AppCompatActivity  implements
         GoogleApiClient.OnConnectionFailedListener,
@@ -100,7 +107,7 @@ public class MainActivity extends AppCompatActivity  implements
     OutputStream mmOutputStream;
     //TextView showbluetoothdata;
     public static ArrayList<Float> humidityValues = new ArrayList<>();
-    public static ArrayList<Float> heartRateValues = new ArrayList<>();
+    public static ArrayList<Integer> heartRateValues = new ArrayList<>();
     public static ArrayList<Float> bodyTempValues = new ArrayList<>();
 
     @Override
@@ -244,7 +251,7 @@ public class MainActivity extends AppCompatActivity  implements
                                     try {
                                         humidityValues.add(Float.parseFloat(values[0]));
                                         bodyTempValues.add(Float.parseFloat(values[1]));
-                                        heartRateValues.add(Float.parseFloat(values[2]));
+                                        heartRateValues.add(Integer.parseInt(values[2]));
                                     }catch(NumberFormatException e){
                                         e.printStackTrace();
                                     }catch(ArrayIndexOutOfBoundsException e){
@@ -312,7 +319,7 @@ public class MainActivity extends AppCompatActivity  implements
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment implements Orientation.Listener{
+    public static class PlaceholderFragment extends Fragment implements Orientation.Listener , YahooWeatherInfoListener {
         /**
          * The fragment argument representing the section number for this
          * fragment.
@@ -322,7 +329,8 @@ public class MainActivity extends AppCompatActivity  implements
         private Orientation mOrientation;
         private ArrayList<Float> accelerometerValues;
         private ArrayList<Float> tempValues;
-        private TextView displayvalues;
+        private TextView displayLevel;
+        private TextView displayStroke;
         public PlaceholderFragment() {
         }
 
@@ -339,7 +347,7 @@ public class MainActivity extends AppCompatActivity  implements
         private LineGraphSeries<DataPoint> humiditySeries= new LineGraphSeries<>();
         private LineGraphSeries<DataPoint> bodyTempSeries= new LineGraphSeries<>();
         private LineGraphSeries<DataPoint> heartRateSeries= new LineGraphSeries<>();
-
+        private YahooWeather mYahooWeather = YahooWeather.getInstance(5000, true);
 
         public void initGraph(GraphView graph, LineGraphSeries mSeries ) {
             graph.getViewport().setXAxisBoundsManual(true);
@@ -355,7 +363,98 @@ public class MainActivity extends AppCompatActivity  implements
             graph.addSeries(mSeries);
         }
 
+        private float sum(ArrayList<Float> list){
+            float summ =0;
+            for(float value : list){
+                summ+=value;
+            }
+            return summ;
+        }
+
+        private int sumInt(ArrayList<Integer> list){
+            int summ =0;
+            for(int value : list){
+                summ+=value;
+            }
+            return summ;
+        }
+
         private void calculateStroke(){
+
+            float activity,heartRate,sweat,bodyTemp,ambientTemp;
+            if(accelerometerValues.size()>0 && heartRateValues.size()>0 && humidityValues.size()>0 && bodyTempValues.size()>0 && tempValues.size()>0 && displayLevel!=null && displayStroke!=null){
+                activity = sum(accelerometerValues)/accelerometerValues.size();//accelerometerValues.get(accelerometerValues.size()-1);
+                heartRate = (sumInt(heartRateValues)/heartRateValues.size());
+                sweat = (sum(humidityValues)/humidityValues.size());//humidityValues.get(humidityValues.size()-1);
+                bodyTemp = (sum(bodyTempValues)/bodyTempValues.size());//bodyTempValues.get(bodyTempValues.size()-1);
+                ambientTemp = (sum(tempValues)/tempValues.size());//tempValues.get(tempValues.size()-1);
+
+                if(bodyTemp>40.0 && heartRate>100 && sweat<5 && ambientTemp> 40 && activity>30){
+                    //activity is high and summer season
+                    //very high
+                    displayStroke.setText("Heatstroke");
+                    displayLevel.setText("High");
+                    displayLevel.setTextColor(Color.RED);
+                    displayLevel.setTextSize(16);
+                    return;
+
+                }
+
+                if(bodyTemp>38.0 && heartRate>90 && sweat<10 && ambientTemp> 35 && activity>25){
+                    //activity is high and summer season
+                    //moderate
+                    displayStroke.setText("Heatstroke");
+                    displayLevel.setText("Moderate");
+                    displayLevel.setTextColor(Color.YELLOW);
+                    displayLevel.setTextSize(16);
+                    return;
+                }
+
+                if(bodyTemp<35.0 && heartRate<70 &&  ambientTemp<5){
+                    //activity is low and winter season
+                    //moderate
+                    displayStroke.setText("Heatstroke");
+                    displayLevel.setText("Moderate");
+                    displayLevel.setTextColor(Color.YELLOW);
+                    displayLevel.setTextSize(16);
+                    return;
+                }
+
+                if(bodyTemp<32.0 && heartRate<60 &&  ambientTemp<5){
+                    //activity is low and winter season
+                    //very high
+
+                    displayStroke.setText("Coldstroke");
+                    displayLevel.setText("High");
+                    displayLevel.setTextColor(Color.RED);
+                    displayLevel.setTextSize(16);
+                    return;
+
+                }
+            }
+
+            if(displayLevel!=null && displayStroke!=null) {
+                displayStroke.setText("");
+                displayLevel.setText("Normal");
+                displayLevel.setTextColor(Color.GREEN);
+                displayLevel.setTextSize(16);
+            }
+
+//
+// Season : Summer
+//            Activity : high
+//            Body temperature > 40oC
+//            Heart Rate >100 bpm
+//            Sweat < 5%
+//                    Ambient temperature > 35oC
+//
+//            Hypothermia:
+//            Season : Winters
+//            Activity : low
+//            Body temperature < 32oC
+//            Heart Rate <60 bpm
+//            Ambient temperature < 5oC
+
 
 
 
@@ -381,7 +480,9 @@ public class MainActivity extends AppCompatActivity  implements
                     graphLastX2Value += 0.25d;
                     if(tempValues.size()>0) {
                         tempSeries.appendData(new DataPoint(graphLastX2Value, tempValues.get(tempValues.size() - 1)), true, 22);
-                    }
+                   } //else{
+//                        tempSeries.appendData(new DataPoint(graphLastX2Value,23.0), true, 22);
+//                    }
                     mHandler.postDelayed(this, 330);
                 }
             };
@@ -394,7 +495,10 @@ public class MainActivity extends AppCompatActivity  implements
 
                     if(humidityValues.size()>0) {
                         humiditySeries.appendData(new DataPoint(graphLastX3Value, humidityValues.get(humidityValues.size() - 1)), true, 22);
-                    }
+                   }//else{
+//
+//                        tempSeries.appendData(new DataPoint(graphLastX2Value,5), true, 22);
+//                    }
                     mHandler.postDelayed(this, 330);
                 }
             };
@@ -427,14 +531,19 @@ public class MainActivity extends AppCompatActivity  implements
             };
             mHandler.postDelayed(mTimer, 1500);
 
-//            mTimer = new Runnable() {
-//                @Override
-//                public void run() {
-//                    //detectWeather();
-//                    mHandler.postDelayed(this, 330);
-//                }
-//            };
-//            mHandler.postDelayed(mTimer, 1500);
+            mTimer = new Runnable() {
+                @Override
+                public void run() {
+//                    try{
+                        //detectWeather();
+//                    }catch(Exception e){
+//                        Log.e("exception",e.getMessage()+"");
+//                    }
+                    calculateStroke();
+                    mHandler.postDelayed(this, 330);
+                }
+            };
+            mHandler.postDelayed(mTimer, 1500);
         }
 
         @Override
@@ -475,10 +584,10 @@ public class MainActivity extends AppCompatActivity  implements
                     }
                     accelerometerValues.add(readings);
                 } else if(sensor.equals("temp")){
-                    while(tempValues.size()>=100){
-                        tempValues.remove(0);
-                    }
-                    tempValues.add(readings);
+//                    while(tempValues.size()>=100){
+//                        tempValues.remove(0);
+//                    }
+//                    tempValues.add(readings);
                 }
 
 
@@ -518,7 +627,7 @@ public class MainActivity extends AppCompatActivity  implements
                     // If request is cancelled, the result arrays are empty.
                     if (grantResults.length > 0
                             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        detectWeather();
+                        //detectWeather();
                     } else {
                         Log.e("error+", "Location permission denied.");
                     }
@@ -538,9 +647,15 @@ public class MainActivity extends AppCompatActivity  implements
                 public void onComplete(@NonNull Task<WeatherResponse> task) {
 
                     Weather weather = task.getResult().getWeather();
+                    float temp = weather.getTemperature(Weather.CELSIUS);
                     //displayvalues.append("Temp: " + weather.getTemperature(Weather.FAHRENHEIT) + " " + weather.getFeelsLikeTemperature(Weather.FAHRENHEIT) + "\n");
-                    Log.e("Tuts+", "Temp: " + weather.getTemperature(Weather.FAHRENHEIT));
-                    Log.e("Tuts+", "Feels like: " + weather.getFeelsLikeTemperature(Weather.FAHRENHEIT));
+                    Log.e("Tuts+", "Temp: " + temp);
+                    Log.e("Tuts+", "Feels like: " + weather.getFeelsLikeTemperature(Weather.CELSIUS));
+//                    while(tempValues.size()>=100){
+//                        tempValues.remove(0);
+//                    }
+                    //tempValues.add(temp);
+
                 }
             });
 
@@ -576,17 +691,24 @@ public class MainActivity extends AppCompatActivity  implements
 
             accelerometerValues=new ArrayList<>();
             tempValues = new ArrayList<>();
+            searchByGPS();
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
                 rootView = inflater.inflate(R.layout.fragment_main, container, false);
-                displayvalues=(TextView) rootView.findViewById(R.id.section_label);
-                displayvalues.setText("temp values\n");
-                detectWeather();
+                displayStroke = (TextView) rootView.findViewById(R.id.section_label);
+                displayLevel=(TextView) rootView.findViewById(R.id.stroke_level);
+                displayLevel.setText("Normal");
+                displayLevel.setTextColor(Color.GREEN);
+                displayLevel.setTextSize(16);
+                //displayvalues.setText("temp values\n");
+
                 Log.e("weather+", "DETECT START DEteCT start");
                 //detectWeather();
                 Log.e("weather+", "DETECT OVER CDETECT OVEr");
             }else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
                 mOrientation.startListening(this);
+
                 rootView = inflater.inflate(R.layout.show_readings, container, false);
+
                 GraphView accelGraph = (GraphView) rootView.findViewById(R.id.accelerometer_graph);
                 GraphView tempGraph = (GraphView) rootView.findViewById(R.id.ambient_temp_graph);
                 GraphView humidityGraph = (GraphView) rootView.findViewById(R.id.humidity_graph);
@@ -602,6 +724,7 @@ public class MainActivity extends AppCompatActivity  implements
                 initGraph(humidityGraph, humiditySeries);
                 initGraph(bodyTempGraph, bodyTempSeries);
                 initGraph(heartRateGraph, heartRateSeries);
+
                 //displayvalues=(TextView) rootView.findViewById(R.id.section_label1);
                 //return rootView;
             }
@@ -628,6 +751,64 @@ public class MainActivity extends AppCompatActivity  implements
 
 
             return rootView;
+        }
+
+        @Override
+        public void gotWeatherInfo(WeatherInfo weatherInfo, YahooWeather.ErrorType errorType) {
+            if (weatherInfo != null) {
+                //setNormalLayout();
+                if (mYahooWeather.getSearchMode() == YahooWeather.SEARCH_MODE.GPS) {
+                    if (weatherInfo.getAddress() != null) {
+                        Log.d("yahoo",YahooWeather.addressToPlaceName(weatherInfo.getAddress()));
+                    }
+                }
+                float temp = weatherInfo.getCurrentTemp();
+                while(tempValues.size()>=100){
+                        tempValues.remove(0);
+                }
+                tempValues.add(temp);
+                String a="====== CURRENT ======" + "\n" +
+                        "date: " + weatherInfo.getCurrentConditionDate() + "\n" +
+                        "weather: " + weatherInfo.getCurrentText() + "\n" +
+                        "temperature in ºC: " + weatherInfo.getCurrentTemp() + "\n" +
+                        "wind chill: " + weatherInfo.getWindChill() + "\n" +
+                        "wind direction: " + weatherInfo.getWindDirection() + "\n" +
+                        "wind speed: " + weatherInfo.getWindSpeed() + "\n" +
+                        "Humidity: " + weatherInfo.getAtmosphereHumidity() + "\n" +
+                        "Pressure: " + weatherInfo.getAtmospherePressure() + "\n" +
+                        "Visibility: " + weatherInfo.getAtmosphereVisibility()
+                ;
+                if (weatherInfo.getCurrentConditionIcon() != null) {
+                    //mIvWeather0.setImageBitmap(weatherInfo.getCurrentConditionIcon());
+                }
+//                for (int i = 0; i < YahooWeather.FORECAST_INFO_MAX_SIZE; i++) {
+//                    //final LinearLayout forecastInfoLayout = (LinearLayout)
+//                      //      getLayoutInflater().inflate(R.layout.forecastinfo, null);
+//                    final TextView tvWeather = (TextView) forecastInfoLayout.findViewById(R.id.textview_forecast_info);
+//                    final WeatherInfo.ForecastInfo forecastInfo = weatherInfo.getForecastInfoList().get(i);
+//                    tvWeather.setText("====== FORECAST " + (i+1) + " ======" + "\n" +
+//                            "date: " + forecastInfo.getForecastDate() + "\n" +
+//                            "weather: " + forecastInfo.getForecastText() + "\n" +
+//                            "low  temperature in ºC: " + forecastInfo.getForecastTempLow() + "\n" +
+//                            "high temperature in ºC: " + forecastInfo.getForecastTempHigh() + "\n"
+//                    );
+//                    final ImageView ivForecast = (ImageView) forecastInfoLayout.findViewById(R.id.imageview_forecast_info);
+//                    if (forecastInfo.getForecastConditionIcon() != null) {
+//                        ivForecast.setImageBitmap(forecastInfo.getForecastConditionIcon());
+//                    }
+//                    mWeatherInfosLayout.addView(forecastInfoLayout);
+//                }
+            } else {
+//                setNoResultLayout(errorType.name());
+            }
+
+        }
+
+        private void searchByGPS() {
+            mYahooWeather.setNeedDownloadIcons(true);
+            mYahooWeather.setUnit(YahooWeather.UNIT.CELSIUS);
+            mYahooWeather.setSearchMode(YahooWeather.SEARCH_MODE.GPS);
+            mYahooWeather.queryYahooWeatherByGPS(this.getContext(), this);
         }
     }
 
