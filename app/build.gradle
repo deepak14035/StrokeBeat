@@ -29,5 +29,7 @@ dependencies {
     compile 'com.jjoe64:graphview:4.2.1'
     compile 'com.google.android.gms:play-services-awareness:11.6.0'
 
+    compile 'zh.wang.android:yweathergetter4a:1.3.0'
+
     implementation 'com.android.support:cardview-v7:27.0.1'
 }
